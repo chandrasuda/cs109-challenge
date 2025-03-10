@@ -1,7 +1,7 @@
 
 import { PortfolioResult } from "@/types/portfolio";
 import { Progress } from "@/components/ui/progress";
-import { ArrowTrendingUp, ArrowTrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface PortfolioWeightsProps {
   portfolio: PortfolioResult;
@@ -61,14 +61,14 @@ export function PortfolioWeights({ portfolio }: PortfolioWeightsProps) {
               <div className="flex items-center">
                 {portfolio.return > 0.05 ? (
                   <span className="text-green-500 flex items-center space-x-1">
-                    <ArrowTrendingUp className="h-4 w-4" />
+                    <TrendingUp className="h-4 w-4" />
                     <span>High</span>
                   </span>
                 ) : portfolio.return > 0.02 ? (
                   <span className="text-yellow-500">Medium</span>
                 ) : (
                   <span className="text-red-500 flex items-center space-x-1">
-                    <ArrowTrendingDown className="h-4 w-4" />
+                    <TrendingDown className="h-4 w-4" />
                     <span>Low</span>
                   </span>
                 )}
@@ -117,9 +117,9 @@ export function PortfolioWeights({ portfolio }: PortfolioWeightsProps) {
                 value={weight * 100} 
                 max={100}
                 className="h-2" 
-                style={{ backgroundColor: `${color}30` }}
-                indicatorClassName="transition-all duration-500" 
-                indicatorStyle={{ backgroundColor: color }}
+                style={{ 
+                  backgroundColor: `${color}30` 
+                }}
               />
             </div>
           ))}
