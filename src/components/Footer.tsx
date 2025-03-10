@@ -10,9 +10,10 @@ export function Footer() {
             Built with precision and care. All portfolio simulations are for educational purposes only.
           </p>
         </div>
-        <p className="text-center text-sm text-muted-foreground md:text-left">
-          Created with modern design principles. &copy; {new Date().getFullYear()}
-        </p>
+        <div className="text-center text-sm text-muted-foreground md:text-right flex flex-col">
+          <p>Developed by Chandra Suda for the CS109 project</p>
+          <p>Created with modern design principles. &copy; {new Date().getFullYear()}</p>
+        </div>
       </div>
     </footer>
   );
