@@ -1,21 +1,22 @@
-
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X, Plus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
 
 interface StockInputProps {
   value: string[];
   onChange: (value: string[]) => void;
 }
 
+const MAX_STOCKS = 5;
+
 const POPULAR_STOCKS = [
   { ticker: "AAPL", name: "Apple" },
   { ticker: "MSFT", name: "Microsoft" },
   { ticker: "GOOG", name: "Google" },
   { ticker: "AMZN", name: "Amazon" },
-  { ticker: "META", name: "Meta" },
   { ticker: "TSLA", name: "Tesla" },
   { ticker: "NVDA", name: "NVIDIA" },
   { ticker: "^GSPC", name: "S&P 500" },
@@ -25,6 +26,16 @@ export function StockInput({ value, onChange }: StockInputProps) {
   const [inputValue, setInputValue] = useState("");
 
   const handleAddStock = () => {
+    if (value.length >= MAX_STOCKS) {
+      toast({
+        title: "Maximum stocks reached",
+        description: `You can only select up to ${MAX_STOCKS} stocks at a time.`,
+        variant: "destructive",
+      });
+      setInputValue("");
+      return;
+    }
+
     if (inputValue.trim() && !value.includes(inputValue.trim().toUpperCase())) {
       const newValue = [...value, inputValue.trim().toUpperCase()];
       onChange(newValue);
@@ -44,10 +55,21 @@ export function StockInput({ value, onChange }: StockInputProps) {
   };
 
   const handleAddPopularStock = (ticker: string) => {
+    if (value.length >= MAX_STOCKS) {
+      toast({
+        title: "Maximum stocks reached",
+        description: `You can only select up to ${MAX_STOCKS} stocks at a time.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!value.includes(ticker)) {
       onChange([...value, ticker]);
     }
   };
+
+  const remainingSlots = MAX_STOCKS - value.length;
 
   return (
     <div className="space-y-4 animate-in">
@@ -55,11 +77,14 @@ export function StockInput({ value, onChange }: StockInputProps) {
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Add stock ticker (e.g., AAPL)"
+            placeholder={remainingSlots > 0 
+              ? `Add stock ticker (${remainingSlots} remaining)`
+              : "Maximum stocks reached"}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             className="pl-9"
+            disabled={remainingSlots === 0}
           />
         </div>
         <Button 
@@ -67,6 +92,7 @@ export function StockInput({ value, onChange }: StockInputProps) {
           size="icon" 
           variant="outline"
           className="shrink-0"
+          disabled={remainingSlots === 0}
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -89,16 +115,18 @@ export function StockInput({ value, onChange }: StockInputProps) {
 
       {/* Popular stocks suggestions */}
       <div className="pt-2">
-        <p className="text-sm text-muted-foreground mb-2">Popular stocks:</p>
+        <p className="text-sm text-muted-foreground mb-2">
+          Popular stocks {remainingSlots > 0 ? `(${remainingSlots} slots remaining)` : "(maximum reached)"}:
+        </p>
         <div className="flex flex-wrap gap-2">
           {POPULAR_STOCKS.map((stock) => (
             <button
               key={stock.ticker}
               onClick={() => handleAddPopularStock(stock.ticker)}
-              disabled={value.includes(stock.ticker)}
+              disabled={value.includes(stock.ticker) || remainingSlots === 0}
               className={`px-3 py-1 text-xs rounded-full transition-colors border
                 ${
-                  value.includes(stock.ticker)
+                  value.includes(stock.ticker) || remainingSlots === 0
                     ? "bg-secondary text-muted-foreground cursor-not-allowed"
                     : "hover:bg-secondary/80 hover:text-accent-foreground"
                 }`}

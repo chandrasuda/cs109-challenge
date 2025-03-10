@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -29,7 +28,7 @@ import type {
 const Index = () => {
   // State for portfolio settings
   const [settings, setSettings] = useState<PortfolioSettings>({
-    tickers: ["AAPL", "MSFT", "GOOG", "AMZN", "META"],
+    tickers: ["AAPL", "MSFT", "GOOG"], // Reduced from 4 to 3 default stocks
     startDate: new Date(new Date().setFullYear(new Date().getFullYear() - 3)),
     endDate: new Date(),
     numPortfolios: 5000,
@@ -73,6 +72,15 @@ const Index = () => {
         toast({
           title: "Not enough stocks",
           description: "Please select at least 2 stocks for portfolio diversification.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (settings.tickers.length > 5) {
+        toast({
+          title: "Too many stocks",
+          description: "Please select a maximum of 5 stocks for analysis.",
           variant: "destructive",
         });
         return;
@@ -126,7 +134,7 @@ const Index = () => {
           <div className="max-w-screen-xl mx-auto text-center space-y-6">
             <div className="inline-block mb-6">
               <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium animate-fade-in">
-                Advanced Portfolio Analysis
+                Chandra Suda - CS109 Challenge Project
               </div>
             </div>
             

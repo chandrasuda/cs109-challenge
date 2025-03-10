@@ -19,4 +19,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Polyfill process.env for yahoo-finance2
+    'process.env': {
+      NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+    },
+    // Polyfill process for modules that expect it
+    'process': {
+      'env': {},
+      'browser': true
+    }
+  }
 }));

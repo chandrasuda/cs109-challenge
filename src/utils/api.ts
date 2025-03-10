@@ -1,90 +1,115 @@
-
 import { Stock, StockData, ReturnData } from "@/types/portfolio";
 
-// Simulate API call to fetch stock data
+// Base URL for the proxy server
+const PROXY_BASE_URL = 'http://localhost:3000/api';
+
+// Format date for Twelve Data API (YYYY-MM-DD format)
+function formatDateForAPI(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+// Fetch real stock data through our proxy server
 export const fetchStockData = async (
   tickers: string[],
   startDate: Date,
   endDate: Date
 ): Promise<Record<string, Stock>> => {
-  // This is a mock implementation
-  // In a real app, this would call an API or service like yfinance
-  
   const stocks: Record<string, Stock> = {};
   
   try {
-    // For demo purposes, generate random stock data
+    console.log("Fetching stock data through proxy server...");
+    
+    // Format dates for Twelve Data API
+    const formattedStartDate = formatDateForAPI(startDate);
+    const formattedEndDate = formatDateForAPI(endDate);
+    
+    // Process each ticker
     for (const ticker of tickers) {
-      const data: StockData[] = generateMockStockData(startDate, endDate, ticker);
+      console.log(`Fetching data for ${ticker}...`);
       
-      stocks[ticker] = {
-        ticker,
-        name: getStockName(ticker),
-        data
-      };
+      try {
+        // Request stock data through our proxy
+        const response = await fetch(
+          `${PROXY_BASE_URL}/stock/${ticker}?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.details || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.chart?.result?.[0]) {
+          throw new Error('Invalid data format received from proxy');
+        }
+        
+        const result = data.chart.result[0];
+        const { timestamp, indicators } = result;
+        const quote = indicators.quote[0];
+        const adjClose = indicators.adjclose[0].adjclose;
+        
+        // Convert Twelve Data response to our format
+        const stockData: StockData[] = timestamp.map((time: number, i: number) => ({
+          date: new Date(time * 1000).toISOString().split('T')[0],
+          open: Number(quote.open[i].toFixed(2)),
+          high: Number(quote.high[i].toFixed(2)),
+          low: Number(quote.low[i].toFixed(2)),
+          close: Number(adjClose[i].toFixed(2)),
+          volume: quote.volume[i]
+        })).filter(d => 
+          !isNaN(d.open) && !isNaN(d.high) && 
+          !isNaN(d.low) && !isNaN(d.close) && 
+          !isNaN(d.volume)
+        );
+
+        // Get company name
+        let companyName = getDefaultStockName(ticker);
+        try {
+          const companyResponse = await fetch(`${PROXY_BASE_URL}/company/${ticker}`);
+          if (companyResponse.ok) {
+            const companyData = await companyResponse.json();
+            if (companyData.quoteResponse?.result?.[0]) {
+              companyName = companyData.quoteResponse.result[0].longName || 
+                           companyData.quoteResponse.result[0].shortName || 
+                           companyName;
+            }
+          }
+        } catch (companyError) {
+          console.warn(`Using default name for ${ticker} due to error:`, companyError);
+        }
+        
+        stocks[ticker] = {
+          ticker,
+          name: companyName,
+          data: stockData
+        };
+        
+        console.log(`Successfully fetched ${stockData.length} data points for ${ticker}`);
+        
+        // Add delay between requests to respect API rate limits
+        await new Promise(resolve => setTimeout(resolve, 250));
+      } catch (error) {
+        console.error(`Error fetching ${ticker} data:`, error);
+        throw new Error(`Failed to fetch data for ${ticker}: ${error.message}`);
+      }
     }
     
     return stocks;
   } catch (error) {
-    console.error("Error fetching stock data:", error);
-    throw new Error("Failed to fetch stock data");
+    console.error("Error in stock data fetching:", error);
+    throw new Error(`Unable to fetch stock data: ${error.message}`);
   }
 };
 
-// Mock function to generate realistic looking stock data
-function generateMockStockData(startDate: Date, endDate: Date, ticker: string): StockData[] {
-  const data: StockData[] = [];
-  
-  // Generate random starting price based on ticker (for realistic values)
-  let seedMultiplier = 1;
-  for (let i = 0; i < ticker.length; i++) {
-    seedMultiplier += ticker.charCodeAt(i) / 100;
-  }
-  
-  // Starting price between $50-$500 based on ticker
-  let price = 50 + (Math.random() * 450 * (seedMultiplier % 1));
-  
-  // Generate daily data between start and end dates
-  const currentDate = new Date(startDate);
-  
-  while (currentDate <= endDate) {
-    // Skip weekends
-    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
-      // Add some randomness to price movement
-      // More volatile for certain tickers
-      const volatility = ticker.includes("^") ? 0.02 : 0.01;
-      const change = price * volatility * (Math.random() - 0.5);
-      price += change;
-      
-      // Ensure price doesn't go below 1
-      price = Math.max(price, 1);
-      
-      data.push({
-        date: currentDate.toISOString().split('T')[0],
-        close: parseFloat(price.toFixed(2)),
-        high: parseFloat((price + Math.random() * 2).toFixed(2)),
-        low: parseFloat((price - Math.random() * 2).toFixed(2)),
-        open: parseFloat((price - change).toFixed(2)),
-        volume: Math.floor(Math.random() * 1000000) + 100000
-      });
-    }
-    
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  
-  return data;
-}
-
 // Helper to get stock name from ticker
-function getStockName(ticker: string): string {
+function getDefaultStockName(ticker: string): string {
   const names: Record<string, string> = {
     "AAPL": "Apple Inc.",
     "MSFT": "Microsoft Corporation",
     "GOOG": "Alphabet Inc.",
     "GOOGL": "Alphabet Inc.",
     "AMZN": "Amazon.com, Inc.",
-    "META": "Meta Platforms, Inc.",
     "TSLA": "Tesla, Inc.",
     "NVDA": "NVIDIA Corporation",
     "^GSPC": "S&P 500 Index",
@@ -109,14 +134,20 @@ export const calculateReturns = (stocks: Record<string, Stock>): ReturnData[] =>
   
   const returns: ReturnData[] = [];
   const allDates = stocks[firstTicker].data!.map(d => d.date);
+  const tickers = Object.keys(stocks);
   
-  // Initialize returns array with dates
+  // Initialize returns array with dates and empty ticker properties
   allDates.slice(1).forEach(date => {
-    returns.push({ date });
+    const returnPoint: ReturnData = { date };
+    // Initialize all ticker properties to avoid undefined
+    tickers.forEach(ticker => {
+      returnPoint[ticker] = 0; // Initialize with 0
+    });
+    returns.push(returnPoint);
   });
   
   // Calculate returns for each stock
-  Object.keys(stocks).forEach(ticker => {
+  tickers.forEach(ticker => {
     const stockData = stocks[ticker].data;
     if (!stockData || stockData.length < 2) return;
     
@@ -125,7 +156,9 @@ export const calculateReturns = (stocks: Record<string, Stock>): ReturnData[] =>
       const currentClose = stockData[i].close;
       const returnValue = (currentClose - previousClose) / previousClose;
       
-      returns[i-1][ticker] = returnValue;
+      if (i-1 < returns.length) {
+        returns[i-1][ticker] = returnValue;
+      }
     }
   });
   
