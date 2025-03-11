@@ -77,10 +77,10 @@ const Index = () => {
         return;
       }
 
-      if (settings.tickers.length > 5) {
+      if (settings.tickers.length > 4) {
         toast({
           title: "Too many stocks",
-          description: "Please select a maximum of 5 stocks for analysis.",
+          description: "Please select a maximum of 4 stocks for analysis.",
           variant: "destructive",
         });
         return;
@@ -177,7 +177,7 @@ const Index = () => {
               </CardHeader>
               <CardContent className="space-y-8">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Select Stocks</h3>
+                  <h3 className="text-lg font-medium">Select Stocks (max 4 due to API rate limits)</h3>
                   <StockInput 
                     value={settings.tickers} 
                     onChange={handleTickersChange} 
@@ -224,7 +224,7 @@ const Index = () => {
                     ) : (
                       <>
                         <PlayCircle className="mr-2 h-5 w-5" />
-                        Run Simulation
+                        Run Simulation (once per min due to rate limit)
                       </>
                     )}
                   </Button>

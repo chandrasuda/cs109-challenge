@@ -1,4 +1,3 @@
-
 import { PortfolioSettings, PortfolioResult, SimulationResult, ReturnData, BayesianUpdate } from "@/types/portfolio";
 
 // Calculate portfolio performance metrics
@@ -9,11 +8,12 @@ export const calculatePortfolioPerformance = (
   riskFreeRate: number
 ): PortfolioResult => {
   // Calculate expected return (annualized)
-  let portfolioReturn = 0;
+  let dailyReturn = 0;
   for (let i = 0; i < weights.length; i++) {
-    portfolioReturn += weights[i] * meanReturns[i];
+    dailyReturn += weights[i] * meanReturns[i];
   }
-  portfolioReturn = portfolioReturn * 252; // Annualize
+  // Convert daily return to annual return using geometric approach
+  const portfolioReturn = Math.pow(1 + dailyReturn, 252) - 1;
   
   // Calculate volatility (annualized)
   let portfolioVariance = 0;

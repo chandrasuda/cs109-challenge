@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Stock } from "@/types/portfolio";
 import {
@@ -98,10 +97,10 @@ export function StockChart({ stocks }: StockChartProps) {
             <LineChart
               data={priceData}
               margin={{
-                top: 20,
+                top: 10,
                 right: 20,
                 left: 20,
-                bottom: 20,
+                bottom: 10, // Increased bottom margin
               }}
             >
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -132,7 +131,7 @@ export function StockChart({ stocks }: StockChartProps) {
                   });
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ bottom: -30 }} /> {/* Added wrapper styling */}
               
               {Object.keys(stocks).map((ticker, index, arr) => (
                 <Line
@@ -159,7 +158,7 @@ export function StockChart({ stocks }: StockChartProps) {
                 top: 20,
                 right: 20,
                 left: 20,
-                bottom: 20,
+                bottom: 40, // Increased bottom margin
               }}
             >
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -193,7 +192,7 @@ export function StockChart({ stocks }: StockChartProps) {
                   });
                 }}
               />
-              <Legend />
+              <Legend wrapperStyle={{ bottom: -30 }} /> {/* Added wrapper styling */}
               
               {Object.keys(stocks).map((ticker, index, arr) => (
                 <Line

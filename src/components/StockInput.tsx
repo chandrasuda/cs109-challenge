@@ -10,7 +10,7 @@ interface StockInputProps {
   onChange: (value: string[]) => void;
 }
 
-const MAX_STOCKS = 5;
+const MAX_STOCKS = 4;
 
 const POPULAR_STOCKS = [
   { ticker: "AAPL", name: "Apple" },
