@@ -117,7 +117,7 @@ const Index = () => {
       console.error("Simulation error:", error);
       toast({
         title: "Simulation Failed",
-        description: "An error occurred while running the simulation.",
+        description: "An error occurred while running the simulation. API LIMIT EXCEEDED. You have used up the free tier limit.",
         variant: "destructive",
       });
     } finally {
