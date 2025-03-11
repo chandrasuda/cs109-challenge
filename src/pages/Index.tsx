@@ -8,12 +8,13 @@ import { StockChart } from "@/components/StockChart";
 import { PortfolioChart } from "@/components/PortfolioChart";
 import { PortfolioWeights } from "@/components/PortfolioWeights";
 import { BayesianTable } from "@/components/BayesianTable";
+import { PDFViewer } from "@/components/PDFViewer";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { PlayCircle, RefreshCw, BarChart3 } from "lucide-react";
+import { PlayCircle, RefreshCw, BarChart3, FileText } from "lucide-react";
 
 import { fetchStockData, calculateReturns } from "@/utils/api";
 import { runPortfolioSimulation, runBayesianUpdates } from "@/utils/portfolio";
@@ -390,6 +391,28 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </section>
+
+        {/* Project PDF Section */}
+        <section id="project-pdf" className="py-12 px-6 bg-secondary/50">
+          <div className="max-w-screen-xl mx-auto space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">Project Documentation</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                View the complete CS109 Challenge Project documentation below.
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-center mb-6">
+              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mr-4">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold">Portfolio Explorer - CS109 Challenge Project</h3>
+            </div>
+            
+            {/* Updated PDF path - use absolute URL with file name exactly as it appears in the public directory */}
+            <PDFViewer pdfPath="/CS109_Challenge_Project (1).pdf" />
           </div>
         </section>
       </main>
